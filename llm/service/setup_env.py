@@ -3,19 +3,24 @@ import os
 import platform
 import subprocess
 import time
+import ollama
 
 MODEL_NAME = "qwen2.5:7b"
 
 
 def check_python_requirements():
-    if os.path.exists("requirements.txt"):
+    # Папка, где находится setup_env.py
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    req_file = os.path.join(base_dir, "requirements.txt")
+
+    if os.path.exists(req_file):
         print("=== Проверка и установка зависимостей Python ===")
         subprocess.run([sys.executable, "-m", "pip",
                        "install", "--upgrade", "pip"])
         subprocess.run([sys.executable, "-m", "pip",
-                       "install", "-r", "requirements.txt"])
+                       "install", "-r", req_file])
     else:
-        print("requirements.txt не найден!")
+        print(f"requirements.txt не найден! Ожидалось здесь: {req_file}")
 
 
 def check_ollama_installed():
@@ -53,19 +58,30 @@ def setup_ollama_server():
     try:
         r = requests.get("http://localhost:11434/api/tags", timeout=3)
         if r.status_code == 200:
-            print("Ollama сервер работает")
+            print("Ollama сервер уже работает ✔")
             return
     except requests.RequestException:
-        pass
-
-    print("Сервер Ollama не отвечает. Запускаем...")
-    subprocess.Popen(["ollama", "serve"])
-    time.sleep(5)
+        print("Сервер Ollama не отвечает, пробуем запустить...")
+        subprocess.Popen(["ollama", "serve"])
+        time.sleep(5)
 
 
 def pull_model():
-    import ollama
-    installed_models = [m["name"] for m in ollama.list()]
+    result = ollama.list()  # возвращает ListResponse
+
+    # result.models — список объектов модели
+    try:
+        models_data = result.models
+    except AttributeError:
+        models_data = result  # fallback, если нет .models
+
+    installed_models = []
+    for m in models_data:
+        if hasattr(m, "model"):
+            installed_models.append(m.model)
+        else:
+            print("Не удалось определить имя модели для элемента:", m)
+
     if MODEL_NAME not in installed_models:
         print(f"Модель {MODEL_NAME} не найдена! Скачиваем...")
         ollama.pull(MODEL_NAME)
