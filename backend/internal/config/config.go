@@ -16,8 +16,8 @@ type HTTPServerConfig struct {
 }
 
 type HTTPClientsConfig struct {
-	MWSUrl string `env:"MWS_URL"`
-	//urls...
+	MWSUrl   string `env:"MWS_URL"`
+	MWSToken string `env:"MWS_TOKEN"`
 }
 
 func MustLoadConfig() Config {
