@@ -1,8 +1,6 @@
-import ollama
+from service.setup_env import ensure_environment
+from service.server import serve
 
-response = ollama.generate(
-    model="qwen2.5:7b",
-    prompt="Перечисли ключевые метрики анализа соцсетей."
-)
-
-print(response["response"])
+if __name__ == "__main__":
+    ensure_environment()  # подготовка среды
+    serve()               # запуск gRPC сервера

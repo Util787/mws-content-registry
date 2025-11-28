@@ -16,8 +16,7 @@ import platform
 import subprocess
 import time
 import ollama
-
-MODEL_NAME = "qwen2.5:7b"
+from .config import OLLAMA_MODEL
 
 
 def check_python_requirements():
@@ -94,11 +93,11 @@ def pull_model():
         else:
             print("Не удалось определить имя модели для элемента:", m)
 
-    if MODEL_NAME not in installed_models:
-        print(f"Модель {MODEL_NAME} не найдена! Скачиваем...")
-        ollama.pull(MODEL_NAME)
+    if OLLAMA_MODEL not in installed_models:
+        print(f"Модель {OLLAMA_MODEL} не найдена! Скачиваем...")
+        ollama.pull(OLLAMA_MODEL)
     else:
-        print(f"Модель {MODEL_NAME} уже установлена")
+        print(f"Модель {OLLAMA_MODEL} уже установлена")
 
 
 def windows_install_instructions():
