@@ -4,3 +4,4 @@ pydantic==2.12.4
 requests==2.32.5
 grpcio==1.76.0
 grpcio-tools==1.76.0
+pytest==9.0.1

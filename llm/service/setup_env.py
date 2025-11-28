@@ -64,17 +64,43 @@ def install_ollama_unix():
         )
 
 
-def setup_ollama_server():
+def setup_ollama_server(timeout: int = 30, interval: float = 1.0):
+    """
+    Запускает Ollama сервер, если он не работает.
+    Ждёт, пока сервер станет доступен, или пока не истечёт timeout.
+
+    :param timeout: максимальное время ожидания (в секундах)
+    :param interval: интервал между проверками (в секундах)
+    """
     import requests
-    try:
-        r = requests.get("http://localhost:11434/api/tags", timeout=3)
-        if r.status_code == 200:
-            print("Ollama сервер уже работает")
+    import subprocess
+    import time
+
+    def server_is_up() -> bool:
+        try:
+            r = requests.get("http://localhost:11434/api/tags", timeout=3)
+            return r.status_code == 200
+        except requests.RequestException:
+            return False
+
+    if server_is_up():
+        print("Ollama сервер уже работает")
+        return
+
+    print("Сервер Ollama не отвечает, пробуем запустить...")
+    proc = subprocess.Popen(["ollama", "serve"],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        if server_is_up():
+            print("Ollama сервер успешно запущен")
             return
-    except requests.RequestException:
-        print("Сервер Ollama не отвечает, пробуем запустить...")
-        subprocess.Popen(["ollama", "serve"])
-        time.sleep(5)
+        time.sleep(interval)
+
+    # Если по таймауту сервер не поднялся
+    proc.terminate()
+    raise RuntimeError(f"Ollama сервер не запустился за {timeout} секунд")
 
 
 def pull_model():

@@ -1,8 +1,8 @@
 import grpc
 from concurrent import futures
-from grpc import llm_service_pb2_grpc, llm_service_pb2
-from model_runner import ModelRunner
-from config import GRPC_PORT
+from llm_grpc import llm_service_pb2_grpc, llm_service_pb2
+from .model_runner import ModelRunner
+from .config import GRPC_PORT
 
 model = ModelRunner()
 
