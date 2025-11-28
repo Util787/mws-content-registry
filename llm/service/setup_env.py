@@ -1,3 +1,15 @@
+"""
+Этот скрипт отвечает за подготовку окружения для работы локальной LLM.
+
+- проверяет и устанавливает Python-зависимости из requirements.txt;
+- убеждается, что Ollama установлена (для macOS и Linux может поставить сам);
+- поднимает локальный ollama-server, если он ещё не запущен;
+- проверяет, скачана ли нужная модель, и при необходимости загружает её.
+
+По сути, после запуска этого файла среда полностью готова к использованию модели. В случае с Windows пользователю будет выведена инструкция по установке Ollama вручную.
+"""
+
+
 import sys
 import os
 import platform
@@ -58,7 +70,7 @@ def setup_ollama_server():
     try:
         r = requests.get("http://localhost:11434/api/tags", timeout=3)
         if r.status_code == 200:
-            print("Ollama сервер уже работает ✔")
+            print("Ollama сервер уже работает")
             return
     except requests.RequestException:
         print("Сервер Ollama не отвечает, пробуем запустить...")
@@ -91,12 +103,12 @@ def pull_model():
 
 def windows_install_instructions():
     print("""
-Ollama не установлена на Windows.
-1. Установите через winget (PowerShell от имени администратора):
-   winget install Ollama.Ollama
-2. Или скачайте и установите вручную: https://ollama.com/download
-После установки перезапустите этот скрипт.
-""")
+          Ollama не установлена на Windows.
+          1. Установите через winget (PowerShell от имени администратора):
+          winget install Ollama.Ollama
+          2. Или скачайте и установите вручную: https://ollama.com/download
+          После установки перезапустите этот скрипт.
+          """)
 
 
 def ensure_environment():
