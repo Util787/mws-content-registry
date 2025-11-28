@@ -13,7 +13,7 @@ message AnalyzeRequest {
 }
 
 message AnalyzeResponse {
-    string answer_text = 1;
+    string answer = 1;
     string reasoning = 2;
     string structured = 3;
 }

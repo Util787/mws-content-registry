@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11llm_service.proto\x12\x03llm\"I\n\x0e\x41nalyzeRequest\x12\x12\n\nuser_query\x18\x01 \x01(\t\x12\x12\n\nstats_json\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t\"M\n\x0f\x41nalyzeResponse\x12\x13\n\x0b\x61nswer_text\x18\x01 \x01(\t\x12\x11\n\treasoning\x18\x02 \x01(\t\x12\x12\n\nstructured\x18\x03 \x01(\t2B\n\nLLMService\x12\x34\n\x07\x41nalyze\x12\x13.llm.AnalyzeRequest\x1a\x14.llm.AnalyzeResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11llm_service.proto\x12\x03llm\"I\n\x0e\x41nalyzeRequest\x12\x12\n\nuser_query\x18\x01 \x01(\t\x12\x12\n\nstats_json\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t\"H\n\x0f\x41nalyzeResponse\x12\x0e\n\x06\x61nswer\x18\x01 \x01(\t\x12\x11\n\treasoning\x18\x02 \x01(\t\x12\x12\n\nstructured\x18\x03 \x01(\t2B\n\nLLMService\x12\x34\n\x07\x41nalyze\x12\x13.llm.AnalyzeRequest\x1a\x14.llm.AnalyzeResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,7 +34,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ANALYZEREQUEST']._serialized_start=26
   _globals['_ANALYZEREQUEST']._serialized_end=99
   _globals['_ANALYZERESPONSE']._serialized_start=101
-  _globals['_ANALYZERESPONSE']._serialized_end=178
-  _globals['_LLMSERVICE']._serialized_start=180
-  _globals['_LLMSERVICE']._serialized_end=246
+  _globals['_ANALYZERESPONSE']._serialized_end=173
+  _globals['_LLMSERVICE']._serialized_start=175
+  _globals['_LLMSERVICE']._serialized_end=241
 # @@protoc_insertion_point(module_scope)
