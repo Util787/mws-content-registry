@@ -1,4 +1,4 @@
-from .setup_env import ensure_environment
+from .setup_llm import ensure_environment
 from .server import serve
 
 if __name__ == "__main__":

@@ -12,41 +12,13 @@
 import shutil
 import platform
 import subprocess
-import sys
 import time
 import requests
 import ollama
 from .config import OLLAMA_MODEL
 from .logger import get_logger
-from pathlib import Path
 
 logger = get_logger("setup_env")  # логгер для процесса настройки окружения
-
-# ---------------------------------------
-# Установка зависимостей из requirements.txt
-# ---------------------------------------
-
-
-def install_requirements():
-    """
-    Устанавливает все зависимости из requirements.txt через pip.
-    Если возникнут ошибки, процесс завершится с исключением.
-    """
-    req_file = Path(__file__).parent / "requirements.txt"
-    if not req_file.exists():
-        logger.warning(
-            "requirements.txt не найден, пропускаем установку зависимостей")
-        return
-
-    logger.info(f"Устанавливаем зависимости из {req_file} ...")
-    try:
-        subprocess.run([sys.executable, "-m", "pip", "install",
-                       "-r", str(req_file)], check=True)
-        logger.info("Зависимости успешно установлены")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ошибка при установке зависимостей: {e}")
-        raise RuntimeError(
-            "Не удалось установить зависимости из requirements.txt") from e
 
 
 # ---------------------------------------
@@ -150,7 +122,6 @@ def ensure_environment():
         logger.error("Ollama автоматом запускается только на macOS/Linux")
         return
 
-    install_requirements()       # установка Python-зависимостей
     install_ollama_if_missing()  # установка Ollama если нет
     start_ollama_server()        # старт сервера в фоне
     ensure_model()               # проверка и установка модели

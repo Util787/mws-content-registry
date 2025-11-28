@@ -12,7 +12,21 @@
 
 ## Установка и подготовка среды
 
-- На macOS и Linux скрипт `setup_env.py` автоматически устанавливает зависимости из `requirements.txt`, проверяет наличие Ollama CLI, устанавливает Ollama при необходимости, запускает `ollama serve` и подтягивает модель `OLLAMA_MODEL`.
+Запускать из llm.
+
+Для установки виртуального окружения и либ:
+
+```bash
+python -m service.setup_env
+```
+
+Далее для запуска основного скрипта:
+
+```bash
+python -m service.main
+```
+
+- На macOS и Linux скрипт `setup_env.py` проверяет наличие Ollama CLI, устанавливает Ollama при необходимости, запускает `ollama serve` и подтягивает модель `OLLAMA_MODEL`.
 - На Windows необходимо установить Ollama вручную.
 
 ---
