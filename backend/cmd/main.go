@@ -5,23 +5,37 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/Util787/mws-content-registry/backend/internal/config"
-
-	mwsclient "github.com/Util787/mws-content-registry/backend/internal/adapters/http-clients/mws-client"
+	mwsclient "github.com/Util787/mws-content-registry/internal/adapters/http-clients/mws-client"
+	"github.com/Util787/mws-content-registry/internal/config"
 )
 
 func main() {
-
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
-	//cfg := config.MustLoadConfig()
+	// Конфиг MWS
 
-	mws := mwsclient.NewMWSClient(logger, config.HTTPClientsConfig{MWSUrl: "https://tables.mws.ru/fusion/v1/datasheets/dstAAM6Vof8yCssdVr/records", MWSToken: "uskIIAZwODC7ElSFqXOVQJs"})
+	cfg := config.MustLoadConfig()
 
-	res, err := mws.TakeAll()
+	// Создание клиента
+	mws := mwsclient.NewMWSClient(logger, cfg.HTTPClientsConfig)
+
+	// GET-запрос на первую страницу таблицы
+	res, err := mws.TakeRecords(
+		"viwGe6CA09LxA", // viewId
+		1,               // pageNum
+		100,             // pageSize
+		nil,             // сортировка
+		nil,             // конкретные recordIds
+		nil,             // поля
+	)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Ошибка при запросе MWS:", err)
 		return
 	}
-	fmt.Println(res)
+
+	// Вывод записей
+	logger.Debug("Любая хуйня тест что угодно", slog.Any("Любая хуйня", res))
+	for i, rec := range res.Data.Records {
+		fmt.Printf("[%d] ID=%d URL=%s Author=%s\n", i, rec.Fields.ID, rec.Fields.URL, rec.Fields.Author)
+	}
 }
