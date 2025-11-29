@@ -17,15 +17,22 @@ type HTTPServerConfig struct {
 
 type HTTPClientsConfig struct {
 	MWSUrl             string `env:"MWS_URL"`
-	YouTubeParseClient YouTubeParseClient
+	YouTubeParseClient YouTubeParseClientConfig
+	LLMClient          LLMClientConfig
 }
 
-type YouTubeParseClient struct {
+type YouTubeParseClientConfig struct {
 	YouTubeAPIKey string `env:"YOUTUBE_API_KEY"`
-	VideosLimit   int64    `env:"YOUTUBE_VIDEOS_LIMIT"`
-	CommentsLimit int64    `env:"YOUTUBE_COMMENTS_LIMIT"`
+	VideosLimit   int64  `env:"YOUTUBE_VIDEOS_LIMIT"`
+	CommentsLimit int64  `env:"YOUTUBE_COMMENTS_LIMIT"`
 	Chart         string `env:"YOUTUBE_CHART"`
 	RegionCode    string `env:"YOUTUBE_REGION_CODE"`
+}
+
+type LLMClientConfig struct {
+	LLMUrl    string `env:"LLM_API_URL"`
+	LLMApiKey string `env:"LLM_API_KEY"`
+	LLMModel  string `env:"LLM_MODEL"`
 }
 
 func MustLoadConfig() Config {
