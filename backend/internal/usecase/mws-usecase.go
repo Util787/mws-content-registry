@@ -29,15 +29,7 @@ func (m *MWSTablesUsecase) AddLLMContentAnalyze(recordId string) error {
 
 	var recUpdate models.MWSTableUpdateRecord
 	recUpdate.RecordID = rec.RecordID
-	recUpdate.Fields.URL = &rec.Fields.URL
-	recUpdate.Fields.PublishedAt = &rec.Fields.PublishedAt
-	recUpdate.Fields.Views = &rec.Fields.Views
 	recUpdate.Fields.Topic = &analyzeData.Topic
-	recUpdate.Fields.Likes = &rec.Fields.Likes
-	recUpdate.Fields.Comments = &rec.Fields.Comments
-	recUpdate.Fields.CommentsCount = &rec.Fields.CommentsCount
-	recUpdate.Fields.Description = &rec.Fields.Description
-	recUpdate.Fields.Author = &rec.Fields.Author
 	recUpdate.Fields.Recomendations = &analyzeData.Recomendations
 	recUpdate.Fields.CommentsSummary = &analyzeData.CommentsSummary
 	recUpdate.Fields.CommentsTone = &analyzeData.CommentsTone
@@ -70,7 +62,6 @@ func (m *MWSTablesUsecase) AddYTVideoByURL(url string) error {
 	rec := models.MWSTableNewRecord{
 		Fields: models.MWSTableAddRecordFields{
 			URL:             &vid.Video.VideoURL,
-			PublishedAt:     &pub,
 			Views:           &vid.Video.ViewsCount,
 			Topic:           nil, // to be filled by LLM
 			Likes:           &vid.Video.LikesCount,
@@ -82,6 +73,13 @@ func (m *MWSTablesUsecase) AddYTVideoByURL(url string) error {
 			CommentsSummary: nil, // to be filled by LLM
 			CommentsTone:    nil, // to be filled by LLM
 		},
+	}
+
+	// time validation
+	if pub == 0 || pub == 946674000000 {
+		rec.Fields.PublishedAt = nil
+	} else {
+		rec.Fields.PublishedAt = &pub
 	}
 
 	err = m.MWSTablesClient.AddRecords([]models.MWSTableNewRecord{rec})

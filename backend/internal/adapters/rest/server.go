@@ -21,10 +21,10 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewRestServer(log *slog.Logger, config config.HTTPServerConfig) Server { // add usecase in args
+func NewRestServer(log *slog.Logger, config config.HTTPServerConfig, mwsusecase MWSTablesUsecase) Server { // add usecase in args
 	handler := Handler{
-		log: log,
-		//		usecase: usecase,
+		log:              log,
+		MWSTablesUsecase: mwsusecase,
 	}
 
 	httpServer := &http.Server{
