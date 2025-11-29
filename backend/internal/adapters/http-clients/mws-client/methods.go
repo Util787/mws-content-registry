@@ -14,7 +14,7 @@ func (mwsClient *MWSClient) TakeRecords(
 	pageNum int,
 	pageSize int,
 	sort []map[string]string,
-	recordIds []string,
+	recordId string,
 	fields []string,
 ) ([]models.MWSTableRecord, error) {
 	log := mwsClient.log.With("op", common.GetOperationName())
@@ -33,9 +33,8 @@ func (mwsClient *MWSClient) TakeRecords(
 		sortJSON, _ := json.Marshal(sort)
 		req.SetQueryParam("sort", string(sortJSON))
 	}
-	if len(recordIds) > 0 {
-		idsJSON, _ := json.Marshal(recordIds)
-		req.SetQueryParam("recordIds", string(idsJSON))
+	if recordId != "" {
+		req.SetQueryParam("recordIds", recordId)
 	}
 	if len(fields) > 0 {
 		fieldsJSON, _ := json.Marshal(fields)
@@ -53,6 +52,13 @@ func (mwsClient *MWSClient) TakeRecords(
 	if err := json.Unmarshal(res.Body(), &response); err != nil {
 		return nil, err
 	}
+
+	if len(response.Data.Records) == 0 {
+		log.Warn("No records found in MWS response", slog.Int("status", res.StatusCode()), slog.Any("body", response))
+		return []models.MWSTableRecord{}, fmt.Errorf("records not found")
+	}
+
+	log.Debug("got records", slog.Any("records", response.Data.Records))
 
 	return response.Data.Records, nil
 }
@@ -86,6 +92,46 @@ func (mwsClient *MWSClient) AddRecords(records []models.MWSTableNewRecord) error
 	mwsClient.log.Debug("mws-table-response", slog.Any("resp", respStruct))
 	var response models.MWSTableResponse
 	if err := json.Unmarshal(res.Body(), &response); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (mwsClient *MWSClient) UpdateRecords(records []models.MWSTableUpdateRecord) error {
+	log := mwsClient.log.With("op", common.GetOperationName())
+
+	reqBody := map[string]interface{}{
+		"viewId":  mwsClient.MWSViewID,
+		"records": records,
+	}
+
+	rawResp, err := mwsClient.client.R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(reqBody).
+		Patch(mwsClient.MWSUrl)
+	if err != nil {
+		return err
+	}
+
+	log.Debug("updated records", slog.Any("records", records))
+
+	var respStruct models.MWSTableResponse
+
+	err = json.Unmarshal(rawResp.Body(), &respStruct)
+	if err != nil {
+		log.Error("failed to unmarshal resp", slog.String("error", err.Error()))
+		return err
+	}
+
+	if rawResp.Error() != nil {
+		log.Error("mws-api response error", slog.Int("status", rawResp.StatusCode()), slog.Any("body", respStruct))
+		return err
+	}
+
+	mwsClient.log.Debug("mws-table-response", slog.Any("resp", respStruct))
+	var response models.MWSTableResponse
+	if err := json.Unmarshal(rawResp.Body(), &response); err != nil {
 		return err
 	}
 

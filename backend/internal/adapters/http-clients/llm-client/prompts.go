@@ -22,10 +22,10 @@ func getAnalyzePrompt(dataJSON []byte) string {
 Формат выходного JSON:
 
 {
-  "topic": "",
-  "recomendations": "",
-  "comments_summary": "",
-  "comments_tone": "",
+  "topic": "string",
+  "recomendations": "string",
+  "comments_summary": "string",
+  "comments_tone": "string",
 }
 
 Правила заполнения полей:
@@ -62,6 +62,6 @@ func getAnalyzePrompt(dataJSON []byte) string {
 3. Никаких общих фраз вроде "пост получил много просмотров".  
 4. Только аналитические выводы: взаимосвязи, влияние факторов, закономерности поведения аудитории.
 
-Выходной JSON должен быть строго валиден.
+Верни JSON строго в одну строку, без переносов строк внутри значений. Все строки должны быть валидным JSON. Никаких переносов строк, кроме \n внутри строки.
 `, dataJSON)
 }
