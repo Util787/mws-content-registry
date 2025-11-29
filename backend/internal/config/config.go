@@ -16,7 +16,7 @@ type HTTPServerConfig struct {
 }
 
 type HTTPClientsConfig struct {
-	MWSUrl             string `env:"MWS_URL"`
+	MWSClient MWSClient
 	YouTubeParseClient YouTubeParseClientConfig
 	LLMClient          LLMClientConfig
 }
@@ -33,6 +33,10 @@ type LLMClientConfig struct {
 	LLMUrl    string `env:"LLM_API_URL"`
 	LLMApiKey string `env:"LLM_API_KEY"`
 	LLMModel  string `env:"LLM_MODEL"`
+  
+type MWSClient struct {
+	MWSUrl   string `env:"MWS_URL"`
+	MWSToken string `env:"MWS_TOKEN"`
 }
 
 func MustLoadConfig() Config {

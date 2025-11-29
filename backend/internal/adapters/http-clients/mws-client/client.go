@@ -18,9 +18,11 @@ func NewMWSClient(log *slog.Logger, cfg config.HTTPClientsConfig) *MWSClient {
 
 	rclient := httpclients.NewRestyClient()
 
+	rclient = rclient.SetHeader("Authorization", "Bearer "+cfg.MWSClient.MWSToken)
+
 	return &MWSClient{
 		log:    log,
 		client: rclient,
-		MWSUrl: cfg.MWSUrl,
+		MWSUrl: cfg.MWSClient.MWSUrl,
 	}
 }
