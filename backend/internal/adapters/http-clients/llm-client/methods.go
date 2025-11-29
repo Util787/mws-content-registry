@@ -17,8 +17,35 @@ type llmResp struct {
 	} `json:"choices"`
 }
 
-func (lc *LLMClient) GenerateContentAnalyze(dataJSON []byte) (models.AnalyzeData, error) {
+type recForLLM struct {
+	URL           *string `json:"url"`
+	PublishedAt   *int64  `json:"published_at"`
+	Views         *uint64 `json:"views"`
+	Likes         *uint64 `json:"likes"`
+	Comments      *string `json:"comments"`
+	CommentsCount *uint64 `json:"comments_count"`
+	Description   *string `json:"description"`
+	Author        *string `json:"author"`
+}
+
+func (lc *LLMClient) GenerateContentAnalyze(rec models.MWSTableRecord) (models.AnalyzeData, error) {
 	log := lc.log.With("op", common.GetOperationName())
+
+	var recLLM recForLLM
+	recLLM.URL = &rec.Fields.URL
+	recLLM.PublishedAt = &rec.Fields.PublishedAt
+	recLLM.Views = &rec.Fields.Views
+	recLLM.Likes = &rec.Fields.Likes
+	recLLM.Comments = &rec.Fields.Comments
+	recLLM.CommentsCount = &rec.Fields.CommentsCount
+	recLLM.Description = &rec.Fields.Description
+	recLLM.Author = &rec.Fields.Author
+
+	dataJSON, err := json.Marshal(recLLM)
+	if err != nil {
+		log.Error("Failed to marshal record for llm-api", "error", err)
+		return models.AnalyzeData{}, err
+	}
 
 	prompt := getAnalyzePrompt(dataJSON)
 

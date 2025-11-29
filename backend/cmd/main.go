@@ -1,41 +1,54 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
+	llmclient "github.com/Util787/mws-content-registry/internal/adapters/http-clients/llm-client"
 	mwsclient "github.com/Util787/mws-content-registry/internal/adapters/http-clients/mws-client"
+	parseclients "github.com/Util787/mws-content-registry/internal/adapters/http-clients/parse-clients"
+	"github.com/Util787/mws-content-registry/internal/adapters/rest"
 	"github.com/Util787/mws-content-registry/internal/config"
+	"github.com/Util787/mws-content-registry/internal/usecase"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
-	// Конфиг MWS
-
 	cfg := config.MustLoadConfig()
 
-	// Создание клиента
+	// Initialize HTTP clients
 	mws := mwsclient.NewMWSClient(logger, cfg.HTTPClientsConfig)
+	ytcl := parseclients.NewYouTubeParseClient(context.Background(), logger, cfg.HTTPClientsConfig)
+	llmclient := llmclient.NewLLMClient(logger, cfg.HTTPClientsConfig)
 
-	// GET-запрос на первую страницу таблицы
-	res, err := mws.TakeRecords(
-		"viwGe6CA09LxA", // viewId
-		1,               // pageNum
-		100,             // pageSize
-		nil,             // сортировка
-		nil,             // конкретные recordIds
-		nil,             // поля
-	)
-	if err != nil {
-		fmt.Println("Ошибка при запросе MWS:", err)
-		return
+	// Initialize usecase
+	mwuc := usecase.NewMWSTablesUsecase(mws, ytcl, llmclient)
+
+	// Initialize and run REST server
+	server := rest.NewRestServer(logger, cfg.HTTPServerConfig, mwuc)
+	go func() {
+		logger.Info("HTTP server start", slog.String("host", cfg.HTTPServerConfig.Host), slog.Int("port", cfg.HTTPServerConfig.Port))
+		if err := server.Run(); err != nil {
+			logger.Error("HTTP server error", slog.String("error", err.Error()))
+		}
+	}()
+
+	//graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	<-quit
+	logger.Info("Shutting down gracefully...")
+
+	logger.Info("Shutting down server")
+	if err := server.Shutdown(context.Background()); err != nil {
+		logger.Error("HTTP server shutdown error", slog.String("error", err.Error()))
 	}
 
-	// Вывод записей
-	logger.Debug("Любая хуйня тест что угодно", slog.Any("Любая хуйня", res))
-	for i, rec := range res.Data.Records {
-		fmt.Printf("[%d] ID=%d URL=%s Author=%s\n", i, rec.Fields.ID, rec.Fields.URL, rec.Fields.Author)
-	}
+	logger.Info("Shutdown complete")
+
 }

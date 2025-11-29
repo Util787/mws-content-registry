@@ -9,9 +9,10 @@ import (
 )
 
 type MWSClient struct {
-	log    *slog.Logger
-	client *resty.Client
-	MWSUrl string
+	log       *slog.Logger
+	client    *resty.Client
+	MWSUrl    string
+	MWSViewID string
 }
 
 func NewMWSClient(log *slog.Logger, cfg config.HTTPClientsConfig) *MWSClient {
@@ -21,8 +22,9 @@ func NewMWSClient(log *slog.Logger, cfg config.HTTPClientsConfig) *MWSClient {
 	rclient = rclient.SetHeader("Authorization", "Bearer "+cfg.MWSClient.MWSToken)
 
 	return &MWSClient{
-		log:    log,
-		client: rclient,
-		MWSUrl: cfg.MWSClient.MWSUrl,
+		log:       log,
+		client:    rclient,
+		MWSUrl:    cfg.MWSClient.MWSUrl,
+		MWSViewID: cfg.MWSClient.MWSViewID,
 	}
 }

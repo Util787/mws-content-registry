@@ -2,6 +2,7 @@ package llmclient
 
 import (
 	"log/slog"
+	"time"
 
 	httpclients "github.com/Util787/mws-content-registry/internal/adapters/http-clients"
 	"github.com/Util787/mws-content-registry/internal/config"
@@ -18,6 +19,7 @@ type LLMClient struct {
 func NewLLMClient(log *slog.Logger, cfg config.HTTPClientsConfig) *LLMClient {
 
 	rclient := httpclients.NewRestyClient()
+	rclient.SetTimeout(2 * time.Minute)
 
 	rclient = rclient.SetHeader("Authorization", "Bearer "+cfg.LLMClient.LLMApiKey)
 
