@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Util787/mws-content-registry/internal/config"
+	"d/internal/config"
 )
 
 const (

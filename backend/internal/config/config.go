@@ -8,6 +8,7 @@ import (
 type Config struct {
 	HTTPServerConfig
 	HTTPClientsConfig
+	PostgesConfig
 }
 
 type HTTPServerConfig struct {
@@ -18,6 +19,12 @@ type HTTPServerConfig struct {
 type HTTPClientsConfig struct {
 	MWSUrl   string `env:"MWS_URL"`
 	MWSToken string `env:"MWS_TOKEN"`
+}
+
+type PostgesConfig struct {
+	Name     string `env:"POSTGRES_DB"`
+	User     string `env:"POSTGRES_USER"`
+	Password string `env:"POSTGRES_PASSWORD"`
 }
 
 func MustLoadConfig() Config {

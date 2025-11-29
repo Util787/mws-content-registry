@@ -6,7 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Util787/mws-content-registry/internal/common"
+	"d/internal/common"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

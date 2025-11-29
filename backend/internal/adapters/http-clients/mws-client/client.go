@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	httpclients "github.com/Util787/mws-content-registry/backend/internal/adapters/http-clients"
-	"github.com/Util787/mws-content-registry/backend/internal/config"
+	httpclients "d/internal/adapters/http-clients"
+	config "d/internal/config"
+
 	"github.com/go-resty/resty/v2"
 )
 

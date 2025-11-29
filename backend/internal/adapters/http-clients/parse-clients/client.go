@@ -3,8 +3,9 @@ package parseclients
 import (
 	"log/slog"
 
-	httpclients "github.com/Util787/mws-content-registry/internal/adapters/http-clients"
-	"github.com/Util787/mws-content-registry/internal/config"
+	httpclients "d/internal/adapters/http-clients"
+	"d/internal/config"
+
 	"github.com/go-resty/resty/v2"
 )
 
