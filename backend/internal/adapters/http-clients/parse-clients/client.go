@@ -1,26 +1,36 @@
 package parseclients
 
 import (
+	"context"
 	"log/slog"
 
-	httpclients "github.com/Util787/mws-content-registry/internal/adapters/http-clients"
 	"github.com/Util787/mws-content-registry/internal/config"
-	"github.com/go-resty/resty/v2"
+	"google.golang.org/api/option"
+	"google.golang.org/api/youtube/v3"
 )
 
-type ParseClient struct {
-	log    *slog.Logger
-	client *resty.Client
-	//urls to parse...
+type YouTubeParseClient struct {
+	log           *slog.Logger
+	ytService     *youtube.Service
+	videosLimit   int64
+	commentsLimit int64
+	chart         string
+	regionCode    string
 }
 
-func NewParseClient(log *slog.Logger, cfg config.HTTPClientsConfig) *ParseClient {
+func NewYouTubeParseClient(ctx context.Context, log *slog.Logger, cfg config.HTTPClientsConfig) *YouTubeParseClient {
 
-	rclient := httpclients.NewRestyClient()
+	yService, err := youtube.NewService(ctx, option.WithAPIKey(cfg.YouTubeParseClient.YouTubeAPIKey))
+	if err != nil {
+		log.Error("Failed to create YouTube service in parse client", "error", err)
+	}
 
-	return &ParseClient{
-		log:    log,
-		client: rclient,
-		//urls...
+	return &YouTubeParseClient{
+		log:           log,
+		ytService:     yService,
+		videosLimit:   cfg.YouTubeParseClient.VideosLimit,
+		commentsLimit: cfg.YouTubeParseClient.CommentsLimit,
+		chart:         cfg.YouTubeParseClient.Chart,
+		regionCode:    cfg.YouTubeParseClient.RegionCode,
 	}
 }
