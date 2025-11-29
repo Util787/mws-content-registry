@@ -16,8 +16,8 @@ type HTTPServerConfig struct {
 }
 
 type HTTPClientsConfig struct {
-	MWSUrl             string `env:"MWS_URL"`
 	YouTubeParseClient YouTubeParseClient
+	MWSClient MWSClient
 }
 
 type YouTubeParseClient struct {
@@ -26,6 +26,11 @@ type YouTubeParseClient struct {
 	CommentsLimit int64    `env:"YOUTUBE_COMMENTS_LIMIT"`
 	Chart         string `env:"YOUTUBE_CHART"`
 	RegionCode    string `env:"YOUTUBE_REGION_CODE"`
+}
+
+type MWSClient struct {
+	MWSUrl   string `env:"MWS_URL"`
+	MWSToken string `env:"MWS_TOKEN"`
 }
 
 func MustLoadConfig() Config {
