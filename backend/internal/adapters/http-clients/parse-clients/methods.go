@@ -1,6 +1,8 @@
 package parseclients
 
 import (
+	"strings"
+
 	"github.com/Util787/mws-content-registry/internal/common"
 	"github.com/Util787/mws-content-registry/internal/models"
 )
@@ -34,10 +36,14 @@ func (ytpc *YouTubeParseClient) ScrabVideosWithComments() ([]models.YTVideosWith
 			})
 		}
 
+		strbuilder := strings.Builder{}
+		strbuilder.WriteString("https://www.youtube.com/watch?v=")
+		strbuilder.WriteString(video.Id)
+
 		videosWithComments = append(videosWithComments, models.YTVideosWithComments{
 			Video: models.YTVideo{
-				VideoId:       video.Id,
-				ChannelId:     video.Snippet.ChannelId,
+				VideoURL:      strbuilder.String(),
+				ChannelTitle:  video.Snippet.ChannelTitle,
 				Title:         video.Snippet.Title,
 				Description:   video.Snippet.Description,
 				LikesCount:    video.Statistics.LikeCount,

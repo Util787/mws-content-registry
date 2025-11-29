@@ -5,29 +5,24 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/Util787/mws-content-registry/internal/common"
 	"github.com/Util787/mws-content-registry/internal/models"
 )
 
-// NewRecord — структура для добавления новой записи
-type NewRecord struct {
-	Fields map[string]interface{} `json:"fields"`
-}
-
 // TakeRecords получает записи из MWS Tables с поддержкой пагинации, сортировки и фильтров
 func (mwsClient *MWSClient) TakeRecords(
-	viewId string,
 	pageNum int,
 	pageSize int,
 	sort []map[string]string,
 	recordIds []string,
 	fields []string,
-) (models.Response, error) {
+) ([]models.MWSTableRecord, error) {
+	log := mwsClient.log.With("op", common.GetOperationName())
 
 	req := mwsClient.client.R()
 
-	if viewId != "" {
-		req.SetQueryParam("viewId", viewId)
-	}
+	req.SetQueryParam("viewId", mwsClient.MWSViewID)
+
 	if pageNum > 0 {
 		req.SetQueryParam("pageNum", fmt.Sprintf("%d", pageNum))
 	}
@@ -47,23 +42,27 @@ func (mwsClient *MWSClient) TakeRecords(
 		req.SetQueryParam("fields", string(fieldsJSON))
 	}
 
+	log.Debug("req", slog.Any("body", req.Body), slog.Any("headers", req.Header))
+
 	res, err := req.Get(mwsClient.MWSUrl)
 	if err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
-	var response models.Response
+	var response models.MWSTableResponse
 	if err := json.Unmarshal(res.Body(), &response); err != nil {
-		return models.Response{}, err
+		return nil, err
 	}
 
-	return response, nil
+	return response.Data.Records, nil
 }
 
 // AddRecords добавляет новые записи в таблицу
-func (mwsClient *MWSClient) AddRecords(viewId string, records []NewRecord) (models.Response, error) {
+func (mwsClient *MWSClient) AddRecords(records []models.MWSTableNewRecord) error {
+	log := mwsClient.log.With("op", common.GetOperationName())
+
 	reqBody := map[string]interface{}{
-		"viewId":  viewId,
+		"viewId":  mwsClient.MWSViewID,
 		"records": records,
 	}
 
@@ -72,14 +71,23 @@ func (mwsClient *MWSClient) AddRecords(viewId string, records []NewRecord) (mode
 		SetBody(reqBody).
 		Post(mwsClient.MWSUrl)
 	if err != nil {
-		return models.Response{}, err
+		return err
 	}
 
-	mwsClient.log.Debug("12e", slog.Any("123", res))
-	var response models.Response
+	var respStruct models.MWSTableResponse
+
+	json.Unmarshal(res.Body(), &respStruct)
+
+	if res.Error() != nil {
+		log.Error("mws-api response error", slog.Int("status", res.StatusCode()), slog.Any("body", respStruct))
+		return err
+	}
+
+	mwsClient.log.Debug("mws-table-response", slog.Any("resp", respStruct))
+	var response models.MWSTableResponse
 	if err := json.Unmarshal(res.Body(), &response); err != nil {
-		return models.Response{}, err
+		return err
 	}
 
-	return response, nil
+	return nil
 }

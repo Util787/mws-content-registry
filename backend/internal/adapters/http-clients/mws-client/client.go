@@ -12,6 +12,7 @@ type MWSClient struct {
 	log    *slog.Logger
 	client *resty.Client
 	MWSUrl string
+	MWSViewID string
 }
 
 func NewMWSClient(log *slog.Logger, cfg config.HTTPClientsConfig) *MWSClient {
@@ -24,5 +25,6 @@ func NewMWSClient(log *slog.Logger, cfg config.HTTPClientsConfig) *MWSClient {
 		log:    log,
 		client: rclient,
 		MWSUrl: cfg.MWSClient.MWSUrl,
+		MWSViewID: cfg.MWSClient.MWSViewID,
 	}
 }
