@@ -10,7 +10,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	v1 := router.Group("/api/v1")
 	v1.Use(newBasicMiddleware(h.log))
 
-	//routes...
+	v1.POST("/add-yt-video", h.addYTVideoByURL)
+	v1.POST("/add-yt-videos/recent", h.addRecentYTVideos)
+	v1.POST("/add-llm-analyze/:recordId", h.addLLMContentAnalyze)
+	v1.GET("/records", h.takeRecords)
+
+	v1.POST("/ai-chat/send-message", h.sendMessageToChat)
+	v1.GET("/ai-chat/:chatId", h.getChatHistory)
 
 	return router
 }

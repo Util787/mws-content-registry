@@ -17,8 +17,35 @@ type llmResp struct {
 	} `json:"choices"`
 }
 
-func (lc *LLMClient) GenerateContentAnalyze(dataJSON []byte) (models.AnalyzeData, error) {
+type recForLLMAnalyze struct {
+	URL           *string `json:"url"`
+	PublishedAt   *int64  `json:"published_at"`
+	Views         *uint64 `json:"views"`
+	Likes         *uint64 `json:"likes"`
+	Comments      *string `json:"comments"`
+	CommentsCount *uint64 `json:"comments_count"`
+	Description   *string `json:"description"`
+	Author        *string `json:"author"`
+}
+
+func (lc *LLMClient) GenerateContentAnalyze(rec models.MWSTableRecord) (models.AnalyzeData, error) {
 	log := lc.log.With("op", common.GetOperationName())
+
+	var recLLM recForLLMAnalyze
+	recLLM.URL = &rec.Fields.URL
+	recLLM.PublishedAt = &rec.Fields.PublishedAt
+	recLLM.Views = &rec.Fields.Views
+	recLLM.Likes = &rec.Fields.Likes
+	recLLM.Comments = &rec.Fields.Comments
+	recLLM.CommentsCount = &rec.Fields.CommentsCount
+	recLLM.Description = &rec.Fields.Description
+	recLLM.Author = &rec.Fields.Author
+
+	dataJSON, err := json.Marshal(recLLM)
+	if err != nil {
+		log.Error("Failed to marshal record for llm-api", "error", err)
+		return models.AnalyzeData{}, err
+	}
 
 	prompt := getAnalyzePrompt(dataJSON)
 
@@ -52,11 +79,7 @@ func (lc *LLMClient) GenerateContentAnalyze(dataJSON []byte) (models.AnalyzeData
 	log.Debug("llm-api response", slog.Any("resp", llmResponse))
 
 	content := llmResponse.Choices[0].Message.Content
-	content = strings.TrimSpace(content)
-	content = strings.TrimPrefix(content, "```json")
-	content = strings.TrimPrefix(content, "```")
-	content = strings.TrimSuffix(content, "```")
-	content = strings.TrimSpace(content)
+	content = trimJSONCodeBlock(content)
 
 	var analyzeData models.AnalyzeData
 	err = json.Unmarshal([]byte(content), &analyzeData)
@@ -66,4 +89,55 @@ func (lc *LLMClient) GenerateContentAnalyze(dataJSON []byte) (models.AnalyzeData
 	}
 
 	return analyzeData, nil
+}
+
+func (lc *LLMClient) GenerateChatAnswer(recs []models.MWSTableRecord, userMessage string) (string, error) {
+	log := lc.log.With("op", common.GetOperationName())
+
+	dataJSON, err := json.Marshal(recs)
+	if err != nil {
+		log.Error("Failed to marshal record for llm-api", "error", err)
+		return "", err
+	}
+
+	prompt := getChatAnswerPropmt(dataJSON, userMessage)
+
+	resp, err := lc.client.R().SetBody(map[string]interface{}{
+		"model": lc.LLMModel,
+		"messages": []map[string]string{
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		}}).
+		Post(lc.LLMUrl)
+
+	if err != nil {
+		log.Error("Failed to call llm-api for generating chat answer", "error", err)
+		return "", err
+	}
+
+	if resp.StatusCode() != 200 {
+		log.Error("llm-api returned non-200 status code", slog.Int("status", resp.StatusCode()), slog.Any("body", resp.Body()))
+		return "", err
+	}
+
+	var llmResponse llmResp
+	err = json.Unmarshal(resp.Body(), &llmResponse)
+	if err != nil {
+		log.Error("Failed to unmarshal llm-api response body", slog.String("error", err.Error()))
+		return "", err
+	}
+
+	return llmResponse.Choices[0].Message.Content, nil
+
+}
+
+func trimJSONCodeBlock(content string) string {
+	content = strings.TrimSpace(content)
+	content = strings.TrimPrefix(content, "```json")
+	content = strings.TrimPrefix(content, "```")
+	content = strings.TrimSuffix(content, "```")
+	content = strings.TrimSpace(content)
+	return content
 }

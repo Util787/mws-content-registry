@@ -8,6 +8,7 @@ import (
 type Config struct {
 	HTTPServerConfig
 	HTTPClientsConfig
+	PostgresConfig
 }
 
 type HTTPServerConfig struct {
@@ -16,7 +17,7 @@ type HTTPServerConfig struct {
 }
 
 type HTTPClientsConfig struct {
-	MWSClient MWSClient
+	MWSClient          MWSClient
 	YouTubeParseClient YouTubeParseClientConfig
 	LLMClient          LLMClientConfig
 }
@@ -36,8 +37,17 @@ type LLMClientConfig struct {
 }
 
 type MWSClient struct {
-	MWSUrl   string `env:"MWS_URL"`
-	MWSToken string `env:"MWS_TOKEN"`
+	MWSUrl    string `env:"MWS_URL"`
+	MWSToken  string `env:"MWS_TOKEN"`
+	MWSViewID string `env:"MWS_VIEW_ID"`
+}
+
+type PostgresConfig struct {
+	Host     string `env:"POSTGRES_HOST"`
+	Port     int    `env:"POSTGRES_PORT"`
+	User     string `env:"POSTGRES_USER"`
+	Password string `env:"POSTGRES_PASSWORD"`
+	DbName   string `env:"POSTGRES_DB"`
 }
 
 func MustLoadConfig() Config {

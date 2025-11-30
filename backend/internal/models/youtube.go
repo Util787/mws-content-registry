@@ -6,8 +6,8 @@ type YTVideosWithComments struct {
 }
 
 type YTVideo struct {
-	VideoId       string
-	ChannelId     string
+	VideoURL      string
+	ChannelTitle     string
 	Title         string
 	Description   string
 	LikesCount    uint64
