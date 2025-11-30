@@ -16,19 +16,30 @@ type Storage struct {
 	log *slog.Logger
 }
 
+const (
+	defaultMaxConns        = 10
+	defaultConnMaxLifetime = time.Hour
+	defaultConnMaxIdleTime = time.Minute * 10
+)
+
 func NewStorage(db *pgxpool.Pool, log *slog.Logger) *Storage {
 	return &Storage{Db: db, log: log}
 }
 
-func ConnectPostgreSQL(cfg config.PostgesConfig) (*pgxpool.Pool, error) {
-	dbURL := fmt.Sprintf("postgresql://%s:%s@postgres:5432/%s?sslmode=disable", cfg.User, cfg.Password, cfg.Name)
+func ConnectPostgreSQL(cfg config.PostgresConfig) (*pgxpool.Pool, error) {
+	connStr := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DbName,
+	)
 
-	poolConfig, err := pgxpool.ParseConfig(dbURL)
+	poolConfig, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return nil, err
 	}
 
-	poolConfig.MaxConns = 10
+	poolConfig.MaxConns = defaultMaxConns
+	poolConfig.MaxConnLifetime = defaultConnMaxLifetime
+	poolConfig.MaxConnIdleTime = defaultConnMaxIdleTime
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {

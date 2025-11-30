@@ -132,3 +132,67 @@ GET /api/v1/records?pageNum=1&pageSize=10
 - Ошибка: `400 Bad Request` или `500 Internal Server Error`
 
 ---
+
+### 5. **Отправить сообщение в чат**
+
+**POST** `/api/v1/ai-chat/send-message`
+
+**Тело запроса:**
+
+```json
+{
+  "chat_id": 12345,
+  "message": "Hello, how are you?"
+}
+```
+
+**Ответ:**
+
+- Успех: `200 OK`
+  ```json
+  {
+    "answer": {
+      "id": 1,
+      "chat_id": 12345,
+      "message": "I'm fine, thank you!",
+      "is_user": false,
+      "created_at": 1633024800
+    }
+  }
+  ```
+- Ошибка: `400 Bad Request` или `500 Internal Server Error`
+
+---
+
+### 6. **Получить историю чата**
+
+**GET** `/api/v1/ai-chat/:chatId`
+
+**Path parameter:**
+
+- `chatId` — ID чата, для которого нужно получить историю.
+
+**Ответ:**
+
+- Успех: `200 OK`
+  ```json
+  {
+    "chatHistory": [
+      {
+        "id": 1,
+        "chat_id": 12345,
+        "message": "Hello, how are you?",
+        "is_user": true,
+        "created_at": 1633024800
+      },
+      {
+        "id": 2,
+        "chat_id": 12345,
+        "message": "I'm fine, thank you!",
+        "is_user": false,
+        "created_at": 1633024900
+      }
+    ]
+  }
+  ```
+- Ошибка: `400 Bad Request` или `500 Internal Server Error`

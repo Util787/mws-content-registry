@@ -15,5 +15,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	v1.POST("/add-llm-analyze/:recordId", h.addLLMContentAnalyze)
 	v1.GET("/records", h.takeRecords)
 
+	v1.POST("/ai-chat/send-message", h.sendMessageToChat)
+	v1.GET("/ai-chat/:chatId", h.getChatHistory)
+
 	return router
 }
