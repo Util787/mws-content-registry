@@ -13,7 +13,7 @@ import (
 func (mwsClient *MWSClient) TakeRecords(
 	pageNum int,
 	pageSize int,
-	sort []map[string]string,
+	sort map[string]string,
 	recordId string,
 	fields []string,
 ) ([]models.MWSTableRecord, error) {
@@ -30,8 +30,7 @@ func (mwsClient *MWSClient) TakeRecords(
 		req.SetQueryParam("pageSize", fmt.Sprintf("%d", pageSize))
 	}
 	if len(sort) > 0 {
-		sortJSON, _ := json.Marshal(sort)
-		req.SetQueryParam("sort", string(sortJSON))
+		req.SetQueryParams(sort)
 	}
 	if recordId != "" {
 		req.SetQueryParam("recordIds", recordId)
@@ -58,7 +57,7 @@ func (mwsClient *MWSClient) TakeRecords(
 		return []models.MWSTableRecord{}, fmt.Errorf("records not found")
 	}
 
-	log.Debug("got records", slog.Any("records", response.Data.Records))
+	// log.Debug("got records", slog.Any("records", response.Data.Records))
 
 	return response.Data.Records, nil
 }

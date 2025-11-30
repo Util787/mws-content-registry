@@ -10,8 +10,13 @@ import (
 
 const YTTimeFormat = time.RFC3339
 
-func (m *MWSTablesUsecase) TakeRecords(pageNum int, pageSize int, sort []map[string]string, recordId string, fields []string) ([]models.MWSTableRecord, error) {
-	return m.MWSTablesClient.TakeRecords(pageNum, pageSize, sort, recordId, fields)
+func (m *MWSTablesUsecase) TakeRecords(pageNum int, pageSize int, sort map[string]string, recordId string, fields []string) ([]models.MWSTableRecord, error) {
+	sortParams := map[string]string{
+		"sort[0][field]": "published_at",
+		"sort[0][order]": "desc",
+	}
+
+	return m.MWSTablesClient.TakeRecords(pageNum, pageSize, sortParams, recordId, fields)
 }
 
 func (m *MWSTablesUsecase) AddLLMContentAnalyze(recordId string) error {

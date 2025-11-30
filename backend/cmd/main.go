@@ -10,10 +10,13 @@ import (
 	llmclient "github.com/Util787/mws-content-registry/internal/adapters/http-clients/llm-client"
 	mwsclient "github.com/Util787/mws-content-registry/internal/adapters/http-clients/mws-client"
 	parseclients "github.com/Util787/mws-content-registry/internal/adapters/http-clients/parse-clients"
+	"github.com/Util787/mws-content-registry/internal/adapters/postgresql"
 	"github.com/Util787/mws-content-registry/internal/adapters/rest"
 	"github.com/Util787/mws-content-registry/internal/config"
 	"github.com/Util787/mws-content-registry/internal/usecase"
 )
+
+const defaultQueueSize = 100
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
@@ -21,15 +24,23 @@ func main() {
 	cfg := config.MustLoadConfig()
 
 	// Initialize HTTP clients
-	mws := mwsclient.NewMWSClient(logger, cfg.HTTPClientsConfig)
-	ytcl := parseclients.NewYouTubeParseClient(context.Background(), logger, cfg.HTTPClientsConfig)
-	llmclient := llmclient.NewLLMClient(logger, cfg.HTTPClientsConfig)
+	mwsClient := mwsclient.NewMWSClient(logger, cfg.HTTPClientsConfig)
+	ytClient := parseclients.NewYouTubeParseClient(context.Background(), logger, cfg.HTTPClientsConfig)
+	llmClient := llmclient.NewLLMClient(logger, cfg.HTTPClientsConfig)
 
-	// Initialize usecase
-	mwuc := usecase.NewMWSTablesUsecase(mws, ytcl, llmclient)
+	// Initialize postgres
+	pgPool, err := postgresql.ConnectPostgreSQL(cfg.PostgresConfig)
+	if err != nil {
+		panic("Failed to connect to Postgresql: " + err.Error())
+	}
+	pgStorage := postgresql.NewStorage(pgPool, logger)
+
+	// Initialize usecases
+	mwUc := usecase.NewMWSTablesUsecase(mwsClient, ytClient, llmClient)
+	aiChatUc := usecase.NewAiChatUsecase(pgStorage, mwsClient, llmClient, defaultQueueSize, logger)
 
 	// Initialize and run REST server
-	server := rest.NewRestServer(logger, cfg.HTTPServerConfig, mwuc)
+	server := rest.NewRestServer(logger, cfg.HTTPServerConfig, mwUc, aiChatUc)
 	go func() {
 		logger.Info("HTTP server start", slog.String("host", cfg.HTTPServerConfig.Host), slog.Int("port", cfg.HTTPServerConfig.Port))
 		if err := server.Run(); err != nil {
